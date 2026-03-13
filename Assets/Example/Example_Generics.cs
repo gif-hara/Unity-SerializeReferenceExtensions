@@ -107,6 +107,65 @@ namespace TestExample.Generics
 
         public ParticleSystem Value => value;
     }
+
+    public interface IFeedback<TContext>
+    {
+        void Invoke (TContext context);
+    }
+
+    public interface ITransformProvider
+    {
+        Transform Provide ();
+    }
+
+    public interface IParticleSystemProvider
+    {
+        ParticleSystem Provide ();
+    }
+
+    [Serializable]
+    public sealed class LogTransform<TContext> : IFeedback<TContext> where TContext : ITransformProvider
+    {
+        public void Invoke (TContext context)
+        {
+            Debug.Log(context.Provide().ToString());
+        }
+    }
+
+    [Serializable]
+    public sealed class LogParticleSystem<TContext> : IFeedback<TContext> where TContext : IParticleSystemProvider
+    {
+        public void Invoke (TContext context)
+        {
+            Debug.Log(context.Provide().ToString());
+        }
+    }
+
+    public readonly struct GameObjectContext : ITransformProvider
+    {
+        private readonly GameObject gameObject;
+
+        public Transform Provide () => gameObject.transform;
+
+        public GameObjectContext (GameObject gameObject)
+        {
+            this.gameObject = gameObject;
+        }
+    }
+
+    public readonly struct ParticleSystemContext : ITransformProvider, IParticleSystemProvider
+    {
+        private readonly ParticleSystem particleSystem;
+
+        Transform ITransformProvider.Provide () => particleSystem.transform;
+
+        ParticleSystem IParticleSystemProvider.Provide () => particleSystem;
+
+        public ParticleSystemContext (ParticleSystem particleSystem)
+        {
+            this.particleSystem = particleSystem;
+        }
+    }
 }
 
 public class Example_Generics : MonoBehaviour
@@ -129,5 +188,11 @@ public class Example_Generics : MonoBehaviour
 
     [SerializeReference, SubclassSelector]
     public TestExample.Generics.IObjectHolder<ParticleSystem> particleSystemHolder = null;
+
+    [SerializeReference, SubclassSelector]
+    public TestExample.Generics.IFeedback<TestExample.Generics.GameObjectContext> feedbackGameObject = null;
+
+    [SerializeReference, SubclassSelector]
+    public TestExample.Generics.IFeedback<TestExample.Generics.ParticleSystemContext> feedbackParticleSystem = null;
 
 }

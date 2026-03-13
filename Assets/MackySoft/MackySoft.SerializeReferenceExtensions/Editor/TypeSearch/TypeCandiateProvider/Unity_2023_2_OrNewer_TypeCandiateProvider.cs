@@ -53,6 +53,11 @@ namespace MackySoft.SerializeReferenceExtensions.Editor
             IEnumerable<Type> types = TypeCache.GetTypesDerivedFrom(genericTypeDefinition);
             foreach (Type type in types)
             {
+                if (!IsMatchConstraints(type, targetTypeArguments))
+                {
+                    continue;
+                }
+
                 // If the type is Generic, create a MakeGenericType from the Arguments of the baseType.
                 Type targetType = type.IsGenericType ? type.MakeGenericType(targetTypeArguments) : type;
 
@@ -76,6 +81,24 @@ namespace MackySoft.SerializeReferenceExtensions.Editor
 
             typeCache.Add(baseType, result);
             return result;
+        }
+
+        private static bool IsMatchConstraints (Type type, Type[] targetTypeArguments)
+        {
+            foreach (Type typeGenericArgument in type.GetGenericArguments())
+            {
+                foreach (Type constraint in typeGenericArgument.GetGenericParameterConstraints())
+                {
+                    foreach (Type targetTypeArgument in targetTypeArguments)
+                    {
+                        if (!constraint.IsAssignableFrom(targetTypeArgument))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         private static IEnumerable<Type> EnumerateAllTypesSafely ()
