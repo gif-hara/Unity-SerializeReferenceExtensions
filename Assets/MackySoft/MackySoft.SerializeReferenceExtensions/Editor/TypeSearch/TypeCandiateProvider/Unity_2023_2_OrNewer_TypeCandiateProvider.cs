@@ -85,6 +85,11 @@ namespace MackySoft.SerializeReferenceExtensions.Editor
 
         private static bool IsMatchConstraints (Type type, Type[] targetTypeArguments)
         {
+            if (type.GetGenericArguments().Length != targetTypeArguments.Length)
+            {
+                return false;
+            }
+
             foreach (Type typeGenericArgument in type.GetGenericArguments())
             {
                 foreach (Type constraint in typeGenericArgument.GetGenericParameterConstraints())
