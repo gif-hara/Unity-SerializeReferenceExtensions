@@ -85,6 +85,19 @@ namespace MackySoft.SerializeReferenceExtensions.Editor
 
         private static bool IsMatchConstraints (Type type, Type[] targetTypeArguments)
         {
+            var interfaces = type.GetInterfaces();
+            foreach (var @interface in interfaces)
+            {
+                if (IsMatchConstraints(@interface, targetTypeArguments))
+                {
+                    return true;
+                }
+            }
+            return IsMatchConstraintsInternal(type, targetTypeArguments);
+        }
+
+        private static bool IsMatchConstraintsInternal (Type type, Type[] targetTypeArguments)
+        {
             if (type.GetGenericArguments().Length != targetTypeArguments.Length)
             {
                 return false;
@@ -92,6 +105,10 @@ namespace MackySoft.SerializeReferenceExtensions.Editor
 
             foreach (Type typeGenericArgument in type.GetGenericArguments())
             {
+                if (!typeGenericArgument.IsGenericParameter)
+                {
+                    continue;
+                }
                 foreach (Type constraint in typeGenericArgument.GetGenericParameterConstraints())
                 {
                     foreach (Type targetTypeArgument in targetTypeArguments)
