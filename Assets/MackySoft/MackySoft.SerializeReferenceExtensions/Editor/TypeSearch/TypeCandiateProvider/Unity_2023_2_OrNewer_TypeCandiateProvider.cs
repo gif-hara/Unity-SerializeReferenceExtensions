@@ -58,6 +58,14 @@ namespace MackySoft.SerializeReferenceExtensions.Editor
                     continue;
                 }
 
+                if (type.IsGenericType)
+                {
+                    if (type.GetGenericArguments().Length != targetTypeArguments.Length)
+                    {
+                        continue;
+                    }
+                }
+
                 // If the type is Generic, create a MakeGenericType from the Arguments of the baseType.
                 Type targetType = type.IsGenericType ? type.MakeGenericType(targetTypeArguments) : type;
 
